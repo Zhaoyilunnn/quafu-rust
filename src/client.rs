@@ -1,13 +1,38 @@
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderMap, HeaderValue};
+use serde::Serialize;
 use serde_json::Value;
+use serde_urlencoded;
 use std::collections::HashMap;
-use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 const CREDENTIAL_PATH: &'static str = "/root/.quafu/api";
 const API_BACKENDS: &'static str = "qbackend/get_backends/";
+const API_EXEC: &'static str = "qbackend/scq_kit/";
+const API_EXEC_ASYNC: &'static str = "qbackend/scq_kit_asyc/";
+const QUAFU_VERSION: &'static str = "0.4.0";
+
+pub struct QuafuResult {
+    text: String,
+}
+
+// References:
+//  https://serde.rs/derive.html
+#[derive(Serialize)] // Generate serialized code using serde
+struct QuafuTaskPayload {
+    qtasm: String,
+    shots: String,
+    qubits: String,
+    scan: String,
+    tomo: i32,
+    selected_server: String,
+    compile: i32,
+    priority: String,
+    task_name: String,
+    pyquafu_version: String,
+    runtime_job_id: String,
+}
 
 pub struct QuafuClient {
     is_compile: bool,
@@ -15,6 +40,9 @@ pub struct QuafuClient {
     priority: u32,
     api_token: String,
     website: String,
+    backends: HashMap<String, serde_json::Value>,
+    backend_name: String,
+    shots: u32,
 }
 
 impl QuafuClient {
@@ -25,6 +53,9 @@ impl QuafuClient {
             priority: 2,
             api_token: String::default(),
             website: String::default(),
+            backends: HashMap::default(),
+            backend_name: String::from("Baiwang"),
+            shots: 1024,
         }
     }
 
@@ -72,7 +103,7 @@ impl QuafuClient {
         Ok(())
     }
 
-    pub fn get_backends(&self) -> Result<HashMap<String, Value>, reqwest::Error> {
+    pub fn get_backends(&mut self) -> Result<(), reqwest::Error> {
         let mut headers = HeaderMap::new();
         headers.insert("api_token", HeaderValue::from_str(&self.api_token).unwrap());
 
@@ -87,13 +118,70 @@ impl QuafuClient {
 
         let backends_json: Value = response.json()?;
 
-        let mut backends = HashMap::new();
         for b in backends_json["data"].as_array().unwrap_or(&vec![]) {
             if let Some(system_name) = b["system_name"].as_str() {
-                backends.insert(system_name.to_string(), b.clone());
+                self.backends.insert(system_name.to_string(), b.clone());
             }
         }
         println!("{}", backends_json.to_string());
-        Ok(backends)
+        Ok(())
+    }
+
+    pub fn execute(&self, qasm: &str, name: &str, async_flag: bool) -> QuafuResult {
+        let backend = self.backends.get(&self.backend_name).unwrap(); // 获取 backend
+
+        // Construct payload
+        let payload = serde_urlencoded::to_string(&QuafuTaskPayload {
+            qtasm: qasm.to_string(),
+            shots: self.shots.to_string(),
+            qubits: "1".to_string(), // TODO: extract from qasm?
+            scan: "0".to_string(),
+            tomo: self.tomo as i32,
+            selected_server: backend["system_id"].as_i64().unwrap().to_string(),
+            compile: self.is_compile as i32,
+            priority: self.priority.to_string(),
+            task_name: name.to_string(),
+            pyquafu_version: QUAFU_VERSION.to_string(),
+            runtime_job_id: "".to_string(),
+        })
+        .unwrap();
+
+        // select API based on async_flag
+        let url = if async_flag {
+            format!("{}{}", &self.website, API_EXEC_ASYNC)
+        } else {
+            format!("{}{}", &self.website, API_EXEC)
+        };
+
+        // set header
+        let mut headers = reqwest::header::HeaderMap::new();
+        headers.insert(
+            reqwest::header::CONTENT_TYPE,
+            "application/x-www-form-urlencoded;charset=UTF-8"
+                .parse()
+                .unwrap(),
+        );
+        headers.insert("api_token", self.api_token.parse().unwrap());
+
+        // Send to website
+        let client = reqwest::blocking::Client::new();
+        let response = client
+            .post(&url)
+            .headers(headers)
+            .body(payload)
+            .send()
+            .unwrap(); // TODO: handle all possible scenarios
+
+        // TODO: Check error
+        if !response.status().is_success() {
+            panic!("Website error"); //
+        }
+
+        // Get result
+        let text = response.text().unwrap();
+
+        println!("Execution result: \n{}", text);
+
+        QuafuResult { text }
     }
 }

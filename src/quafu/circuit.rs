@@ -196,18 +196,22 @@ impl Circuit {
         self.add_double_qubit_fixed_gate("CT", ctrl, targ);
     }
 
+    pub fn measure_all(&mut self) {
+        for i in 0..self.num_qubits {
+            self.measures.push((i, i));
+        }
+        let buffer: Vec<u32> = (0..self.num_qubits).collect();
+        self.ops.push(Operation {
+            name: "Measure".to_string(),
+            qubits: buffer.clone(),
+            cbits: buffer,
+            params: Vec::new(),
+        });
+    }
+
     pub fn measure(&mut self, qubit_list: Option<Vec<u32>>, cbit_list: Option<Vec<u32>>) {
         if qubit_list.is_none() && cbit_list.is_none() {
-            for i in 0..self.num_qubits {
-                self.measures.push((i, i));
-            }
-            let buffer: Vec<u32> = (0..self.num_qubits).collect();
-            self.ops.push(Operation {
-                name: "Measure".to_string(),
-                qubits: buffer.clone(),
-                cbits: buffer,
-                params: Vec::new(),
-            });
+            self.measure_all();
             return;
         }
 

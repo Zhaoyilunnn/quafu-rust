@@ -20,11 +20,9 @@ fn main() {
     let mut q = Circuit::new_with_qubits(2);
     q.h(0);
     q.cx(0, 1);
-    q.measure(None, None);
+    q.measure_all();
 
     println!("{}", q.to_qasm());
 
     c.execute(&q.to_qasm(), "", false);
-
-    println!("Hello, world!");
 }

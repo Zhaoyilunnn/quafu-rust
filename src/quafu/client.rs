@@ -96,10 +96,6 @@ impl QClient {
 
         self.api_token = api_token;
         self.website = website;
-
-        // TODO: delete
-        println!("API token: {}", self.api_token);
-        println!("Website: {}", self.website);
         Ok(())
     }
 
@@ -128,7 +124,7 @@ impl QClient {
     }
 
     pub fn execute(&self, qasm: &str, name: &str, async_flag: bool) -> QRes {
-        let backend = self.backends.get(&self.backend_name).unwrap(); // 获取 backend
+        let backend = self.backends.get(&self.backend_name).unwrap(); // get backend
 
         // Construct payload
         let payload = serde_urlencoded::to_string(&QPayload {
@@ -183,5 +179,10 @@ impl QClient {
         println!("Execution result: \n{}", text);
 
         QRes { text }
+    }
+
+    pub fn info(&self) {
+        println!("Website: {}", self.website);
+        println!("API Token: {}", self.api_token);
     }
 }

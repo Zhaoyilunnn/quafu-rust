@@ -13,14 +13,14 @@ const API_EXEC: &'static str = "qbackend/scq_kit/";
 const API_EXEC_ASYNC: &'static str = "qbackend/scq_kit_asyc/";
 const QUAFU_VERSION: &'static str = "0.4.0";
 
-pub struct QuafuResult {
+pub struct QRes {
     text: String,
 }
 
 // References:
 //  https://serde.rs/derive.html
 #[derive(Serialize)] // Generate serialized code using serde
-struct QuafuTaskPayload {
+struct QPayload {
     qtasm: String,
     shots: String,
     qubits: String,
@@ -34,7 +34,7 @@ struct QuafuTaskPayload {
     runtime_job_id: String,
 }
 
-pub struct QuafuClient {
+pub struct QClient {
     is_compile: bool,
     tomo: bool,
     priority: u32,
@@ -45,9 +45,9 @@ pub struct QuafuClient {
     shots: u32,
 }
 
-impl QuafuClient {
-    pub fn new() -> QuafuClient {
-        QuafuClient {
+impl QClient {
+    pub fn new() -> QClient {
+        QClient {
             is_compile: true,
             tomo: false,
             priority: 2,
@@ -127,11 +127,11 @@ impl QuafuClient {
         Ok(())
     }
 
-    pub fn execute(&self, qasm: &str, name: &str, async_flag: bool) -> QuafuResult {
+    pub fn execute(&self, qasm: &str, name: &str, async_flag: bool) -> QRes {
         let backend = self.backends.get(&self.backend_name).unwrap(); // 获取 backend
 
         // Construct payload
-        let payload = serde_urlencoded::to_string(&QuafuTaskPayload {
+        let payload = serde_urlencoded::to_string(&QPayload {
             qtasm: qasm.to_string(),
             shots: self.shots.to_string(),
             qubits: "1".to_string(), // TODO: extract from qasm?
@@ -182,6 +182,6 @@ impl QuafuClient {
 
         println!("Execution result: \n{}", text);
 
-        QuafuResult { text }
+        QRes { text }
     }
 }

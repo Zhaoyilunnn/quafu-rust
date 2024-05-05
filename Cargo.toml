@@ -1,5 +1,6 @@
+workspace = { members = ["example"] }
 [package]
-name = "quafu-rust"
+name = "quafu"
 version = "0.1.0"
 edition = "2021"
 

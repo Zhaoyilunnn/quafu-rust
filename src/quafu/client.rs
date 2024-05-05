@@ -13,7 +13,7 @@ const API_EXEC: &'static str = "qbackend/scq_kit/";
 const API_EXEC_ASYNC: &'static str = "qbackend/scq_kit_asyc/";
 const QUAFU_VERSION: &'static str = "0.4.0";
 
-pub struct QRes {
+pub struct Result {
     text: String,
 }
 
@@ -59,7 +59,7 @@ impl QClient {
         }
     }
 
-    pub fn load_credential(&mut self) -> Result<(), std::io::Error> {
+    pub fn load_credential(&mut self) -> std::result::Result<(), std::io::Error> {
         let file = File::open(CREDENTIAL_PATH)?;
         let reader = BufReader::new(file);
         let mut lines = reader.lines();
@@ -99,7 +99,7 @@ impl QClient {
         Ok(())
     }
 
-    pub fn get_backends(&mut self) -> Result<(), reqwest::Error> {
+    pub fn get_backends(&mut self) -> std::result::Result<(), reqwest::Error> {
         let mut headers = HeaderMap::new();
         headers.insert("api_token", HeaderValue::from_str(&self.api_token).unwrap());
 
@@ -123,7 +123,7 @@ impl QClient {
         Ok(())
     }
 
-    pub fn execute(&self, qasm: &str, name: &str, async_flag: bool) -> QRes {
+    pub fn execute(&self, qasm: &str, name: &str, async_flag: bool) -> self::Result {
         let backend = self.backends.get(&self.backend_name).unwrap(); // get backend
 
         // Construct payload
@@ -178,7 +178,7 @@ impl QClient {
 
         println!("Execution result: \n{}", text);
 
-        QRes { text }
+        Result { text }
     }
 
     pub fn info(&self) {

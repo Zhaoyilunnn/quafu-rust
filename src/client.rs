@@ -54,7 +54,7 @@ impl QClient {
             api_token: String::default(),
             website: String::default(),
             backends: HashMap::default(),
-            backend_name: String::from("Baiwang"),
+            backend_name: String::from("Dongling"),
             shots: 1024,
         }
     }

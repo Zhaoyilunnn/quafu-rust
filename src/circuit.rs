@@ -7,7 +7,16 @@ pub struct Operation {
 
 impl Operation {
     fn to_qasm(&self) -> String {
+        if self.name == "measure" {
+            let mut qasm_str: String = String::from("");
+            for i in &self.qubits[0..] {
+                qasm_str.push_str(&format!("measure q[{}] -> c[{}];\n", i, i));
+            }
+            return qasm_str;
+        }
+
         let mut qasm_str = self.name.clone();
+
         if !self.qubits.is_empty() {
             qasm_str.push_str(&format!(" q[{}]", self.qubits[0]));
             for q in &self.qubits[1..] {
@@ -22,6 +31,8 @@ impl Operation {
         }
         if !self.params.is_empty() {
             qasm_str.push_str(&format!("({});", self.params[0]));
+        } else {
+            qasm_str.push_str(";");
         }
         qasm_str
     }
@@ -97,103 +108,103 @@ impl Circuit {
     }
 
     pub fn id(&mut self, qubit: u32) {
-        self.add_single_qubit_fixed_gate("Id", qubit);
+        self.add_single_qubit_fixed_gate("id", qubit);
     }
 
     pub fn h(&mut self, qubit: u32) {
-        self.add_single_qubit_fixed_gate("H", qubit);
+        self.add_single_qubit_fixed_gate("h", qubit);
     }
 
     pub fn x(&mut self, qubit: u32) {
-        self.add_single_qubit_fixed_gate("X", qubit);
+        self.add_single_qubit_fixed_gate("x", qubit);
     }
 
     pub fn y(&mut self, qubit: u32) {
-        self.add_single_qubit_fixed_gate("Y", qubit);
+        self.add_single_qubit_fixed_gate("y", qubit);
     }
 
     pub fn z(&mut self, qubit: u32) {
-        self.add_single_qubit_fixed_gate("Z", qubit);
+        self.add_single_qubit_fixed_gate("z", qubit);
     }
 
     pub fn t(&mut self, qubit: u32) {
-        self.add_single_qubit_fixed_gate("T", qubit);
+        self.add_single_qubit_fixed_gate("t", qubit);
     }
 
     pub fn tdg(&mut self, qubit: u32) {
-        self.add_single_qubit_fixed_gate("Tdg", qubit);
+        self.add_single_qubit_fixed_gate("tdg", qubit);
     }
 
     pub fn s(&mut self, qubit: u32) {
-        self.add_single_qubit_fixed_gate("S", qubit);
+        self.add_single_qubit_fixed_gate("s", qubit);
     }
 
     pub fn sdg(&mut self, qubit: u32) {
-        self.add_single_qubit_fixed_gate("Sdg", qubit);
+        self.add_single_qubit_fixed_gate("sdg", qubit);
     }
 
     pub fn sx(&mut self, qubit: u32) {
-        self.add_single_qubit_fixed_gate("SX", qubit);
+        self.add_single_qubit_fixed_gate("sx", qubit);
     }
 
     pub fn sxdg(&mut self, qubit: u32) {
-        self.add_single_qubit_fixed_gate("SXdg", qubit);
+        self.add_single_qubit_fixed_gate("sxdg", qubit);
     }
 
     pub fn sy(&mut self, qubit: u32) {
-        self.add_single_qubit_fixed_gate("SY", qubit);
+        self.add_single_qubit_fixed_gate("sy", qubit);
     }
 
     pub fn sydg(&mut self, qubit: u32) {
-        self.add_single_qubit_fixed_gate("SYdg", qubit);
+        self.add_single_qubit_fixed_gate("sydg", qubit);
     }
 
     pub fn w(&mut self, qubit: u32) {
-        self.add_single_qubit_fixed_gate("W", qubit);
+        self.add_single_qubit_fixed_gate("w", qubit);
     }
 
     pub fn sw(&mut self, qubit: u32) {
-        self.add_single_qubit_fixed_gate("SW", qubit);
+        self.add_single_qubit_fixed_gate("sw", qubit);
     }
 
     pub fn rx(&mut self, qubit: u32, theta: f64) {
-        self.add_single_qubit_param_gate("RX", qubit, theta);
+        self.add_single_qubit_param_gate("rx", qubit, theta);
     }
 
     pub fn ry(&mut self, qubit: u32, theta: f64) {
-        self.add_single_qubit_param_gate("RY", qubit, theta);
+        self.add_single_qubit_param_gate("ry", qubit, theta);
     }
 
     pub fn rz(&mut self, qubit: u32, theta: f64) {
-        self.add_single_qubit_param_gate("RZ", qubit, theta);
+        self.add_single_qubit_param_gate("rz", qubit, theta);
     }
 
     pub fn p(&mut self, qubit: u32, theta: f64) {
-        self.add_single_qubit_param_gate("P", qubit, theta);
+        self.add_single_qubit_param_gate("p", qubit, theta);
     }
 
     pub fn cnot(&mut self, ctrl: u32, targ: u32) {
-        self.add_double_qubit_fixed_gate("CX", ctrl, targ);
+        self.add_double_qubit_fixed_gate("cx", ctrl, targ);
     }
 
     pub fn cx(&mut self, ctrl: u32, targ: u32) {
-        self.add_double_qubit_fixed_gate("CX", ctrl, targ);
+        self.add_double_qubit_fixed_gate("cx", ctrl, targ);
     }
 
     pub fn cy(&mut self, ctrl: u32, targ: u32) {
-        self.add_double_qubit_fixed_gate("CY", ctrl, targ);
+        self.add_double_qubit_fixed_gate("cy", ctrl, targ);
     }
 
     pub fn cz(&mut self, ctrl: u32, targ: u32) {
-        self.add_double_qubit_fixed_gate("CZ", ctrl, targ);
+        self.add_double_qubit_fixed_gate("cz", ctrl, targ);
     }
 
     pub fn cs(&mut self, ctrl: u32, targ: u32) {
-        self.add_double_qubit_fixed_gate("CS", ctrl, targ);
+        self.add_double_qubit_fixed_gate("cs", ctrl, targ);
     }
 
     pub fn ct(&mut self, ctrl: u32, targ: u32) {
-        self.add_double_qubit_fixed_gate("CT", ctrl, targ);
+        self.add_double_qubit_fixed_gate("ct", ctrl, targ);
     }
 
     pub fn measure_all(&mut self) {
@@ -202,7 +213,7 @@ impl Circuit {
         }
         let buffer: Vec<u32> = (0..self.num_qubits).collect();
         self.ops.push(Operation {
-            name: "Measure".to_string(),
+            name: "measure".to_string(),
             qubits: buffer.clone(),
             cbits: buffer,
             params: Vec::new(),
@@ -224,7 +235,7 @@ impl Circuit {
                 self.measures.push((*q, *c));
             }
             self.ops.push(Operation {
-                name: "Measure".to_string(),
+                name: "measure".to_string(),
                 qubits: qubits,
                 cbits: cbits,
                 params: Vec::new(),

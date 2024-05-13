@@ -59,6 +59,10 @@ impl QClient {
         }
     }
 
+    pub fn set_backend_name(&mut self, name: String) {
+        self.backend_name = name;
+    }
+
     pub fn load_credential(&mut self) -> std::result::Result<(), std::io::Error> {
         let file = File::open(CREDENTIAL_PATH)?;
         let reader = BufReader::new(file);

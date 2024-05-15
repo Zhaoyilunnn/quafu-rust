@@ -23,6 +23,17 @@ fn main() {
 
     if let Ok(qasm) = fs::read_to_string(args.qasm) {
         c.set_backend_name(args.backend);
-        c.execute(&qasm, "", false);
+        match c.execute(&qasm, "", false) {
+            Ok(res) => {
+                if let Some(value) = res.get("res") {
+                    println!("Execution results is {}", value);
+                } else {
+                    println!("Res not found!");
+                }
+            }
+            Err(e) => {
+                eprintln!("Task execution failed! {}", e);
+            }
+        }
     }
 }

@@ -1,7 +1,7 @@
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderMap, HeaderValue};
 use serde::Serialize;
-use serde_json::Value;
+use serde_json::{Error, Value};
 use serde_urlencoded;
 use std::collections::HashMap;
 use std::fs::File;
@@ -13,9 +13,16 @@ const API_EXEC: &'static str = "qbackend/scq_kit/";
 const API_EXEC_ASYNC: &'static str = "qbackend/scq_kit_asyc/";
 const QUAFU_VERSION: &'static str = "0.4.0";
 
-pub struct Result {
-    text: String,
-}
+// pub struct Result {
+//     text: String,
+// }
+//
+// impl Result {
+//     pub fn get_counts() {
+//
+//     }
+//
+// }
 
 // References:
 //  https://serde.rs/derive.html
@@ -127,7 +134,12 @@ impl QClient {
         Ok(())
     }
 
-    pub fn execute(&self, qasm: &str, name: &str, async_flag: bool) -> self::Result {
+    pub fn execute(
+        &self,
+        qasm: &str,
+        name: &str,
+        async_flag: bool,
+    ) -> std::result::Result<Value, reqwest::Error> {
         let backend = self.backends.get(&self.backend_name).unwrap(); // get backend
 
         // Construct payload
@@ -178,11 +190,13 @@ impl QClient {
         }
 
         // Get result
-        let text = response.text().unwrap();
+        // let text = response.text().unwrap();
+        let json_body: Value = response.json()?;
 
-        println!("Execution result: \n{}", text);
+        // println!("Execution result: \n{}", text);
 
-        Result { text }
+        // Result { text }
+        Ok(json_body)
     }
 
     pub fn info(&self) {
